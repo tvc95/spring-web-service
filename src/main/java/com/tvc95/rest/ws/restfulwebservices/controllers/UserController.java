@@ -1,6 +1,8 @@
 package com.tvc95.rest.ws.restfulwebservices.controllers;
 
+import com.tvc95.rest.ws.restfulwebservices.beans.Post;
 import com.tvc95.rest.ws.restfulwebservices.beans.User;
+import com.tvc95.rest.ws.restfulwebservices.beans.dao.PostDaoService;
 import com.tvc95.rest.ws.restfulwebservices.beans.dao.UserDaoService;
 import com.tvc95.rest.ws.restfulwebservices.exceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +18,9 @@ public class UserController {
 
     @Autowired
     private UserDaoService userDaoService;
+
+    @Autowired
+    private PostDaoService postDaoService;
 
     @GetMapping("/users")
     public List<User> retrieveAllUsers() {
@@ -44,5 +49,28 @@ public class UserController {
 
         // return status CREATED
         return ResponseEntity.created(location).build();
+    }
+
+    @GetMapping("/users/{id}/posts")
+    public List<Post> retrieveAllPosts(@PathVariable String id) {
+        return postDaoService.findAllPostsByUserId(Integer.parseInt(id));
+    }
+
+    @PostMapping("/users/{id}/posts")
+    public ResponseEntity<Object> newPost(@PathVariable String id, @RequestBody Post post) {
+        post.setUserId(Integer.parseInt(id));
+
+        Post savedPost = postDaoService.createNewPost(post.getUserId(), post);
+
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{postId}")
+                .buildAndExpand(savedPost.getPostId()).toUri();
+
+        return ResponseEntity.created(location).build();
+    }
+
+    @GetMapping("/users/{id}/posts/{postId}")
+    public Post retrievePost(@PathVariable String id, @PathVariable String postId) {
+        return postDaoService.findOne(Integer.parseInt(id), Integer.parseInt(postId));
     }
 }
