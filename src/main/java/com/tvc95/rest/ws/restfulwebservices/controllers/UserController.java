@@ -38,6 +38,15 @@ public class UserController {
         return foundUser;
     }
 
+    @DeleteMapping("/users/{id}")
+    public void deleteUser(@PathVariable int id) {
+        User user = userDaoService.deleteById(id);
+
+        if (user == null) {
+            throw new ResourceNotFoundException("[404] - User not found");
+        }
+    }
+
     @PostMapping("/users")
     public ResponseEntity<Object> newUser(@RequestBody User user) {
         User savedUser = userDaoService.save(user);
